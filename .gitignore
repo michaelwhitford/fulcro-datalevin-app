@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+.shadow-cljs/
+
+# Build output
+resources/public/js/main/
+target/
+
+# Database storage
+data/
+
+# IDE/Editor
+.idea/
+.vscode/
+.calva/
+.lsp/
+.clj-kondo/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Clojure
+.cpcache/
+.nrepl-port
+*.jar
+pom.xml
+pom.xml.asc
+
+# Logs
+*.log

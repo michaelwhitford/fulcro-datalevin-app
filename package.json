@@ -1,0 +1,22 @@
+{
+  "name": "datalevin-test-app",
+  "version": "1.0.0",
+  "description": "Test application for fulcro-rad-datalevin plugin",
+  "private": true,
+  "scripts": {
+    "cljs:watch": "shadow-cljs watch main",
+    "cljs:release": "shadow-cljs release main",
+    "cljs:server": "shadow-cljs server"
+  },
+  "devDependencies": {
+    "shadow-cljs": "^2.28.23"
+  },
+  "dependencies": {
+    "@js-joda/core": "^5.6.3",
+    "@js-joda/timezone": "^2.21.1",
+    "big.js": "^7.0.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "semantic-ui-react": "2.1.5"
+  }
+}

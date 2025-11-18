@@ -1,0 +1,15 @@
+{:paths ["src" "test"]
+ :deps {us.whitford/datalevin-test-app {:local/root "."}}
+ :tasks
+ {:requires ([babashka.fs :as fs]
+             [babashka.process :refer [shell]]
+             [clojure.pprint :refer [pprint]])
+  clean (let [files [".calva" ".lsp" ".clj-kondo" ".shadow-cljs"
+                     ".cpcache" ".portal" ".nrepl-port"]]
+          (doseq [f files]
+                 (when (fs/exists? f) (fs/delete-tree f))))
+  cleanaider (let [files [".aider.chat.history.md" ".aider.input.history"
+                          ".aider.tags.cache.v4"]]
+               (doseq [f files]
+                      (when (fs/exists? f) (fs/delete-tree f))))
+  build (shell "clojure" "-T:build" "uber")}}

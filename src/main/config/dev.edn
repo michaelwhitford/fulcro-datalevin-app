@@ -1,0 +1,26 @@
+{:ring.middleware/defaults-config
+ {:params    {:urlencoded true
+              :multipart  true
+              :nested     true
+              :keywordize true}
+  :cookies   true
+  :session   {:flash        true
+              :cookie-attrs {:http-only true
+                             :same-site :strict}}
+  :security  {:anti-forgery         true
+              :ssl-redirect         false
+              :hsts                 false
+              :frame-options        :sameorigin
+              :content-type-options :nosniff}
+  :static    {:resources "public"}
+  :responses {:not-modified-responses true
+              :absolute-redirects     true
+              :content-types          true
+              :default-charset        "utf-8"}}
+
+ :org.httpkit.server/config
+ {:port 3001
+  :ip   "0.0.0.0"}
+
+ :us.whitford.fulcro.rad.database-adapters.datalevin/databases
+ {:main {:database-path "data/main-db"}}}

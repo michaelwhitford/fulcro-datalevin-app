@@ -1,0 +1,18 @@
+{:deps     {:aliases [:cljs :dev :test]}
+ :nrepl    {:port 9000}
+ :jvm-opts ["-Xmx2G"]
+ :builds   {:main {:target     :browser
+                   :output-dir "resources/public/js/main"
+                   :asset-path "/js/main"
+                   :dev        {:compiler-options {:external-config {:fulcro {:html-source-annotations? true}}}}
+                   :modules    {:main {:init-fn app.client/init}}
+                   :js-options {:resolve
+                                {"@js-joda/timezone"
+                                 {:target  :npm
+                                  :require "@js-joda/timezone/dist/js-joda-timezone-10-year-range.min.js"}}}
+                   :devtools   {:http-root    "resources/public"
+                                :http-port    8023
+                                :preloads     [shadow.remote.runtime.cljs.browser
+                                               com.fulcrologic.devtools.electron-preload]
+                                :watch-dir    "resources/public"
+                                :after-load   app.client/refresh}}}}
