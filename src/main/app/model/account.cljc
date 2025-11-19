@@ -28,4 +28,8 @@
   {ao/schema     :main
    ao/identities #{:account/id}})
 
-(def attributes [id name email active? created-at])
+(defattr all-accounts :account/all-accounts :ref
+  {ao/target      :account/id
+   ao/pc-output   [{:account/all-accounts [:account/id]}]})
+
+(def attributes [id name email active? created-at all-accounts])

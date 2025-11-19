@@ -4,6 +4,7 @@
    [mount.core :refer [defstate]]
    [com.fulcrologic.rad.attributes :as attr]
    [com.fulcrologic.rad.form :as form]
+   [com.fulcrologic.rad.report :as report]
    [com.fulcrologic.rad.pathom3 :as pathom3]
    [us.whitford.fulcro.rad.database-adapters.datalevin :as dl]
    [us.whitford.fulcro.rad.database-adapters.datalevin-options :as dlo]
@@ -19,14 +20,16 @@
 ;; Custom resolvers for testing
 
 (pco/defresolver all-accounts-resolver
-  "Returns all account IDs"
+  "Returns all account IDs for the RAD report"
   [{::dlo/keys [databases]} _]
-  {::all-accounts
-   (let [db (get databases :main)]
-     (mapv first
-           (d/q '[:find ?id
-                  :where [?e :account/id ?id]]
-                db)))})
+  {::pco/output [{:account/all-accounts [:account/id]}]}
+  (let [db (get databases :main)]
+    {:account/all-accounts
+     (mapv (fn [id] {:account/id id})
+           (mapv first
+                 (d/q '[:find ?id
+                        :where [?e :account/id ?id]]
+                      db)))}))
 
 (pco/defresolver all-categories-resolver
   "Returns all category IDs"
@@ -227,4 +230,4 @@
                             all-resolvers])))
 
 (comment
-  (tap> {:from :repl :automatic-resolvers automatic-resolvers}))
+  (tap> {:from :repl :automatic-resolvers automatic-resolvers :all-resolvers all-resolvers}))
