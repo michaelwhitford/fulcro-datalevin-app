@@ -1,9 +1,10 @@
 (ns app.model.account
   "Account entity model with RAD attributes for Datalevin testing."
   (:require
-    [com.fulcrologic.rad.attributes :as attr :refer [defattr]]
-    [com.fulcrologic.rad.attributes-options :as ao]
-    #?(:clj [us.whitford.fulcro.rad.database-adapters.datalevin-options :as dlo])))
+   [com.fulcrologic.rad.attributes :as attr :refer [defattr]]
+   [com.fulcrologic.rad.attributes-options :as ao]
+   #?(:clj [us.whitford.fulcro.rad.database-adapters.datalevin-options :as dlo]))
+  (:refer-clojure :exclude [name]))
 
 (defattr id :account/id :uuid
   {ao/identity? true

@@ -38,6 +38,7 @@
    fo/default-values {:account/active? true}
    fo/route-prefix "account"
    fo/title "Edit Account"
+   fo/debug? true
    fo/cancel-route ::AccountList})
 
 (defsc AccountListItem [this {:account/keys [id name email active?] :as props}
@@ -70,6 +71,10 @@
                                 :local? true
                                 :label "New Account"
                                 :action (fn [this _] (ri/create! this AccountForm))}}
+
+   ro/row-actions [{:label "Delete"
+                    :action (fn [this {:account/keys [id] :as row}]
+                              (form/delete! this :account/id id))}]
 
    ro/control-layout {:action-buttons [::new-account]}}
   #_(report/render-layout this))

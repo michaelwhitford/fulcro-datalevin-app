@@ -1,9 +1,10 @@
 (ns app.model.item
   "Item entity model with references to category."
   (:require
-    [com.fulcrologic.rad.attributes :as attr :refer [defattr]]
-    [com.fulcrologic.rad.attributes-options :as ao]
-    #?(:clj [us.whitford.fulcro.rad.database-adapters.datalevin-options :as dlo])))
+   [com.fulcrologic.rad.attributes :as attr :refer [defattr]]
+   [com.fulcrologic.rad.attributes-options :as ao]
+   #?(:clj [us.whitford.fulcro.rad.database-adapters.datalevin-options :as dlo]))
+  (:refer-clojure :exclude [name]))
 
 (defattr id :item/id :uuid
   {ao/identity? true

@@ -7,7 +7,6 @@ A test application for the `fulcro-rad-datalevin` plugin, demonstrating integrat
 - **Automatic Schema Generation**: RAD attributes automatically generate Datalevin schemas
 - **Pathom3 Resolvers**: Auto-generated resolvers for entity queries
 - **Save/Delete Middleware**: RAD form operations persist to Datalevin
-- **Metrics & Observability**: Track database operations
 - **Multiple Entity Types**: Accounts, Categories, and Items
 - **Reference Support**: Item to Category relationships
 
@@ -57,7 +56,7 @@ npm install
 ### 2. Start the Backend Server
 
 ```bash
-clj -A:dev
+clojure -A:dev
 ```
 
 In the REPL:
@@ -141,28 +140,13 @@ Create entities via the UI or directly:
              {:account/name {:before nil :after "Test User"}
               :account/email {:before nil :after "test@example.com"}}}
       env {::dlo/connections database/connections
-           ::form/delta delta}]
+           ::form/params {::form/delta delta}}]
   ((middleware/save-middleware identity) env))
-```
-
-### 4. Metrics
-
-Monitor database operations:
-
-```clojure
-(dl/get-metrics)
-;; => {:transaction-count 5
-;;     :transaction-errors 0
-;;     :query-count 12
-;;     :total-transaction-time-ms 150}
 ```
 
 ## API Endpoints
 
 - `POST /api` - Execute EQL queries via Pathom3
-- `POST /save` - Handle RAD form saves
-- `POST /delete` - Handle RAD form deletes
-- `GET /health` - Health check endpoint
 
 ## Configuration
 
@@ -175,7 +159,7 @@ Modify `app.server.database/db-path` to change the database storage location (de
 Datalevin requires native access. Run with:
 
 ```bash
-clj -J--enable-native-access=ALL-UNNAMED -A:dev
+clojure -J--enable-native-access=ALL-UNNAMED -A:dev
 ```
 
 Or add to your aliases in `deps.edn`:
