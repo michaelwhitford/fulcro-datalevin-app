@@ -16,6 +16,31 @@ A test application for the `fulcro-rad-datalevin` plugin, demonstrating integrat
 - Node.js (for shadow-cljs)
 - Java 11+ with native access (for Datalevin)
 
+## Testing
+
+This project includes a comprehensive test suite with **43 tests** covering all aspects of the Datalevin adapter:
+
+```bash
+# Run all tests
+clojure -M:run-tests
+
+# Run specific test namespace
+clojure -M:run-tests --focus app.crud-test
+
+# Run single test
+clojure -M:run-tests --focus app.crud-test/create-single-account
+```
+
+Test coverage includes:
+- **CRUD Operations** - Create, Read, Update, Delete for all entity types
+- **Schema Generation** - Automatic Datalevin schema from RAD attributes
+- **Resolver Generation** - Pathom3 resolver creation and configuration
+- **Constraints** - Unique values, identity attributes, references
+- **Pathom Integration** - Query processing and navigation
+- **Middleware** - Save and delete middleware configuration
+
+See [TEST_SUMMARY.md](TEST_SUMMARY.md) for detailed test documentation.
+
 ## Project Structure
 
 ```
