@@ -45,16 +45,30 @@
                            :item/name        "Programming Clojure"
                            :item/description "Learn Clojure programming"
                            :item/price       49.95
-                           :item/in-stock    25}])
+                           :item/in-stock    25}
+                          ;; Person entities (using native-id - no explicit ID needed)
+                          {:person/name  "Charlie Davis"
+                           :person/email "charlie@example.com"
+                           :person/age   28
+                           :person/bio   "Software developer"}
+                          {:person/name  "Dana Wilson"
+                           :person/email "dana@example.com"
+                           :person/age   35
+                           :person/bio   "Product manager"}])
       (log/info "Seeding complete."))))
 
 (defn seed! []
   (let [conn (:main connections)]
     (when conn
       ;; Only seed if the database is empty
-      ;; Check by querying for any entity
-      (let [has-data? (seq (d/q '[:find ?e :where [?e _ _]] (d/db conn)))]
-        (if has-data?
+      ;; Check by looking for actual user data, not enum entities
+      ;; Enum entities (with :db/ident) are automatically created at database startup
+      (let [db (d/db conn)
+            has-user-data? (or (seq (d/q '[:find ?e :where [?e :account/name _]] db))
+                               (seq (d/q '[:find ?e :where [?e :person/name _]] db))
+                               (seq (d/q '[:find ?e :where [?e :category/label _]] db))
+                               (seq (d/q '[:find ?e :where [?e :item/name _]] db)))]
+        (if has-user-data?
           (log/info "Database already contains data. Skipping seed.")
           (do
             (log/info "SEEDING sample data.")
@@ -82,7 +96,16 @@
                                  :item/name        "Programming Clojure"
                                  :item/description "Learn Clojure programming"
                                  :item/price       49.95
-                                 :item/in-stock    25}])
+                                 :item/in-stock    25}
+                                ;; Person entities (using native-id - no explicit ID needed)
+                                {:person/name  "Charlie Davis"
+                                 :person/email "charlie@example.com"
+                                 :person/age   28
+                                 :person/bio   "Software developer"}
+                                {:person/name  "Dana Wilson"
+                                 :person/email "dana@example.com"
+                                 :person/age   35
+                                 :person/bio   "Product manager"}])
             (log/info "Seeding complete.")))))))
 
 

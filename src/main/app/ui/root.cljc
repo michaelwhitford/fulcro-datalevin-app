@@ -1,6 +1,7 @@
 (ns app.ui.root
   "Root UI component for the test application."
   (:require
+   [clojure.string :as str]
    [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
    #?(:clj [com.fulcrologic.fulcro.dom-server :as dom]
       :cljs [com.fulcrologic.fulcro.dom :as dom])
@@ -29,23 +30,34 @@
    [app.model.account :as account]
    [app.model.category :as category]
    [app.model.item :as item]
+   [app.model.person :as person]
    #?(:cljs [taoensso.timbre :as log])))
 
 ;; Account Form and Report
 
 (form/defsc-form AccountForm [this props]
   {fo/id account/id
-   fo/attributes [account/name account/email account/active?]
-   fo/validator (attr/make-attribute-validator [account/name account/email account/active?])
+   fo/attributes [account/name 
+                  account/email 
+                  account/active? 
+                  account/role 
+                  account/status 
+                  account/permissions]
+   fo/validator (attr/make-attribute-validator [account/name 
+                                                 account/email 
+                                                 account/active? 
+                                                 account/role 
+                                                 account/status 
+                                                 account/permissions])
    fo/default-values {:account/active? true}
    fo/route-prefix "account"
    fo/title "Edit Account"
    fo/debug? true
    fo/cancel-route ::AccountList})
 
-(defsc AccountListItem [this {:account/keys [id name email active?] :as props}
+(defsc AccountListItem [this {:account/keys [id name email active? role status permissions] :as props}
                         {:keys [report-instance row-class ::report/idx]}]
-  {:query [:account/id :account/name :account/email :account/active?]
+  {:query [:account/id :account/name :account/email :account/active? :account/role :account/status :account/permissions]
    :ident :account/id}
   (let [{:keys [edit-form entity-id]} (report/form-link report-instance props :account/id)]
     (dom/div :.item
@@ -54,7 +66,14 @@
                         (dom/a :.header {:onClick (fn [] (form/edit! this edit-form entity-id))} name)
                         (dom/strong "Name: " name))
                       (dom/div (dom/strong "Email: ") email)
-                      (dom/div (dom/strong "Active: ") (if active? "Yes" "No"))))))
+                      (dom/div (dom/strong "Active: ") (if active? "Yes" "No"))
+                      (when role
+                        (dom/div (dom/strong "Role: ") (name role)))
+                      (when status
+                        (dom/div (dom/strong "Status: ") (name status)))
+                      (when (seq permissions)
+                        (dom/div (dom/strong "Permissions: ") 
+                                 (str/join ", " (map name permissions))))))))
 
 (def ui-account-item (comp/factory AccountListItem {:keyfn :account/id}))
 
@@ -64,12 +83,21 @@
   {ro/title                     "All Accounts"
    ro/source-attribute          :account/all
    ro/row-pk                    account/id
-   ro/columns                   [account/name account/email account/active?]
+   ro/columns                   [account/name account/email account/active? account/role account/status account/permissions]
    ro/route                     "accounts"
    ro/run-on-mount?             true
    ro/column-formatters {:account/name (fn [this v {:account/keys [id name]}]
                                          (dom/a {:onClick (fn [] (ri/edit! this AccountForm id))}
-                                                (str name)))}
+                                                (str name)))
+                         :account/role (fn [this v row]
+                                         (when v
+                                           (dom/span (name v))))
+                         :account/status (fn [this v row]
+                                           (when v
+                                             (dom/span (name v))))
+                         :account/permissions (fn [this v row]
+                                                (when (seq v)
+                                                  (dom/span (str/join ", " (map name v)))))}
    ro/controls  {::new-account {:type :button
                                 :local? true
                                 :label "New Account"
@@ -165,6 +193,40 @@
 
 (def ui-item-list (comp/factory ItemList {:keyfn :item/id}))
 
+;; Person Form and Report (Native ID Example)
+
+(form/defsc-form PersonForm [this props]
+  {fo/id person/id
+   fo/attributes [person/name person/email person/age person/bio]
+   fo/validator (attr/make-attribute-validator [person/name person/email person/age person/bio])
+   fo/route-prefix "person"
+   fo/title "Edit Person"
+   fo/debug? true
+   fo/cancel-route ::PersonList})
+
+(report/defsc-report PersonList [this props]
+  {ro/title                     "All Persons (Native ID)"
+   ro/source-attribute          :person/all
+   ro/row-pk                    person/id
+   ro/columns                   [person/name person/email person/age]
+   ro/route                     "persons"
+   ro/run-on-mount?             true
+   ro/column-formatters {:person/name (fn [this v {:person/keys [id name]}]
+                                        (dom/a {:onClick (fn [] (ri/edit! this PersonForm id))}
+                                               (str name)))}
+   ro/controls  {::new-person {:type :button
+                               :local? true
+                               :label "New Person"
+                               :action (fn [this _] (ri/create! this PersonForm))}}
+
+   ro/row-actions [{:label "Delete"
+                    :action (fn [this {:person/keys [id] :as row}]
+                              (form/delete! this :person/id id))}]
+
+   ro/control-layout {:action-buttons [::new-person]}})
+
+(def ui-person-list (comp/factory PersonList {:keyfn :person/id}))
+
 (defsc LandingPage [this props]
   {:query [:ui/ready?]
    :ident (fn [] [:component/id ::LandingPage])
@@ -213,6 +275,10 @@
                                          (ui-dropdown-menu {}
                                                            (ui-dropdown-item {:onClick (fn [] (uir/route-to! this `ItemList))} " View All ")
                                                            (ui-dropdown-item {:onClick (fn [] (ri/create! this `ItemForm))} " New ")))
+                            (ui-dropdown {:className " item " :text " Person "}
+                                         (ui-dropdown-menu {}
+                                                           (ui-dropdown-item {:onClick (fn [] (uir/route-to! this `PersonList))} " View All ")
+                                                           (ui-dropdown-item {:onClick (fn [] (ri/create! this `PersonForm))} " New ")))
                             (dom/div :.right.menu
                                      (dom/div :.ui.item
                                               (dom/i :.ui.icon.user)))))
@@ -244,7 +310,11 @@
                            (ri/report-state {:route/target `ItemList
                                              :route/path ["items"]})
                            (ri/form-state {:route/target `ItemForm
-                                           :route/path ["item"]})))))
+                                           :route/path ["item"]})
+                           (ri/report-state {:route/target `PersonList
+                                             :route/path ["persons"]})
+                           (ri/form-state {:route/target `PersonForm
+                                           :route/path ["person"]})))))
 
 (comment
   (comp/get-query Root)

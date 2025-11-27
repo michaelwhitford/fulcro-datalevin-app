@@ -11,8 +11,8 @@
     (let [resolvers (dl/generate-resolvers model/all-attributes :main)]
       
       (testing "Correct number of resolvers"
-        ;; 3 ID resolvers + 3 all-ids resolvers = 6 total
-        (is (= 6 (count resolvers))))
+        ;; 4 ID resolvers (account, category, item, person) + 4 all-ids resolvers = 8 total
+        (is (= 8 (count resolvers))))
       
       (testing "All resolvers are valid Pathom3 resolvers"
         (doseq [resolver resolvers]
@@ -28,7 +28,7 @@
                                           (str (::pco/op-name (pco/operation-config %))))
                                resolvers)]
       
-      (is (= 3 (count id-resolvers)) "Should have 3 ID resolvers")
+      (is (= 4 (count id-resolvers)) "Should have 4 ID resolvers (account, category, item, person)")
       
       (testing "ID resolvers support batch operations"
         (doseq [resolver id-resolvers]
@@ -43,7 +43,7 @@
                                                (str (::pco/op-name (pco/operation-config %))))
                                     resolvers)]
       
-      (is (= 3 (count all-ids-resolvers)) "Should have 3 all-IDs resolvers")
+      (is (= 4 (count all-ids-resolvers)) "Should have 4 all-IDs resolvers (account, category, item, person)")
       
       (testing "All-IDs resolvers have no required input"
         (doseq [resolver all-ids-resolvers]

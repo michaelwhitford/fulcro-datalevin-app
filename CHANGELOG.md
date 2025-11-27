@@ -2,6 +2,58 @@
 
 ## [Unreleased]
 
+### Added
+- **Native-id support for integration testing**
+  - Added new `Person` entity model with native-id support:
+    - `:person/id` - Uses Datalevin's built-in `:db/id` (`:long` type with `::dlo/native-id? true`)
+    - `:person/name`, `:person/email`, `:person/age`, `:person/bio` - Regular attributes
+  - Created comprehensive test suite in `app.native-id-test` with 13 tests covering:
+    - Schema generation (verifies native-id attributes are excluded)
+    - Helper function `native-id?` identification
+    - CRUD operations with auto-assigned entity IDs
+    - Query pattern conversion (`:person/id` → `:db/id`)
+    - Resolver generation and result mapping
+    - Delta processing with raw entity IDs vs lookup refs
+    - Mixed entity queries (native-id + UUID entities)
+  - All 71 tests pass with 266 assertions ✅
+  
+  **Background:** The upstream fulcro-rad-datalevin adapter added native-id support (commit b95656c). Native IDs allow identity attributes to use Datalevin's built-in `:db/id` directly instead of requiring a separate UUID or other identifier. This provides:
+  - Better performance (no lookup ref needed)
+  - Compatibility with existing Datalevin databases
+  - Simplified entity creation (auto-assigned IDs)
+  
+  **Key Features:**
+  - **Type Requirement:** Native-id attributes must be `:long` type
+  - **Option:** Set `::dlo/native-id? true` on identity attributes
+  - **Schema:** Native-id attributes are excluded from schema generation
+  - **Queries:** Pathom queries automatically convert `:person/id` to `:db/id`
+  - **Results:** Resolvers map `:db/id` back to `:person/id` in results
+  - **Deltas:** Use raw entity IDs (e.g., `42`) instead of lookup refs (e.g., `[:person/id 42]`)
+  
+  **UI Integration:**
+  - Added `PersonForm` for creating/editing person entities
+  - Added `PersonList` report showing all persons with native entity IDs
+  - Added "Person" menu item to navigation
+  - Person ID column displays the raw Datalevin entity ID (integer)
+  - Seed data includes sample person entities
+
+- **Enum attribute support for integration testing**
+  - Added three enum attributes to `app.model.account`:
+    - `:account/role` - Single-value enum with unqualified keywords (`:admin`, `:user`, `:guest`)
+    - `:account/status` - Single-value enum with qualified keywords (`:status/active`, `:status/inactive`, `:status/pending`)
+    - `:account/permissions` - Many-cardinality enum (`:read`, `:write`, `:execute`)
+  - Created comprehensive test suite in `app.enum-test` covering:
+    - Schema generation for enum attributes
+    - Enum ident entity creation (both qualified and unqualified keywords)
+    - CRUD operations with single and many-cardinality enums
+    - Complex enum queries with multiple conditions
+  - Updated UI to display and edit enum values:
+    - Added enum fields to `AccountForm` with proper field styles (`:pick-one` and `:pick-many`)
+    - Updated `AccountList` report to display role, status, and permissions columns
+    - Added column formatters to properly render enum values as human-readable labels
+  
+  **Background:** The upstream fulcro-rad-datalevin adapter added enum support. Enums are stored as `:db.type/ref` in Datalevin, with enum values represented as entities with `:db/ident`. Unqualified keywords (like `:admin`) automatically get namespaced (`:account.role/admin`), while qualified keywords (like `:status/active`) are used as-is.
+
 ### Changed
 - **Updated tests to match upstream fulcro-rad-datalevin changes**
   - Updated all-IDs resolver naming from `:account/all-accounts` to `:account/all` format

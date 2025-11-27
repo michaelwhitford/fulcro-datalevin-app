@@ -7,8 +7,10 @@ A test application for the `fulcro-rad-datalevin` plugin, demonstrating integrat
 - **Automatic Schema Generation**: RAD attributes automatically generate Datalevin schemas
 - **Pathom3 Resolvers**: Auto-generated resolvers for entity queries
 - **Save/Delete Middleware**: RAD form operations persist to Datalevin
-- **Multiple Entity Types**: Accounts, Categories, and Items
+- **Multiple Entity Types**: Accounts, Categories, Items, and Persons
 - **Reference Support**: Item to Category relationships
+- **Native ID Support**: Person entities use Datalevin's built-in `:db/id` for better performance
+- **Enum Support**: Account entities support role, status, and permissions enums
 
 ## Prerequisites
 
@@ -18,7 +20,7 @@ A test application for the `fulcro-rad-datalevin` plugin, demonstrating integrat
 
 ## Testing
 
-This project includes a comprehensive test suite with **43 tests** covering all aspects of the Datalevin adapter:
+This project includes a comprehensive test suite with **71 tests** covering all aspects of the Datalevin adapter:
 
 ```bash
 # Run all tests
@@ -38,6 +40,8 @@ Test coverage includes:
 - **Constraints** - Unique values, identity attributes, references
 - **Pathom Integration** - Query processing and navigation
 - **Middleware** - Save and delete middleware configuration
+- **Native ID Support** - Datalevin's built-in `:db/id` as identity attribute
+- **Enum Support** - Single and many-cardinality enum attributes
 
 See [TEST_SUMMARY.md](TEST_SUMMARY.md) for detailed test documentation.
 
@@ -169,6 +173,40 @@ Create entities via the UI or directly:
   ((middleware/save-middleware identity) env))
 ```
 
+### 4. Native ID Support
+
+Native IDs allow entities to use Datalevin's built-in `:db/id` directly:
+
+```clojure
+;; Define a native-id attribute
+(defattr id :person/id :long
+  {ao/identity? true
+   ao/schema :main
+   ::dlo/native-id? true})  ;; Uses :db/id instead of separate UUID
+
+;; Create entity - ID is auto-assigned by Datalevin
+(d/transact! conn [{:person/name "Alice"
+                    :person/email "alice@test.com"}])
+
+;; Query using entity ID
+(let [eid (ffirst (d/q '[:find ?e :where [?e :person/name "Alice"]] db))]
+  (d/pull db [:db/id :person/name :person/email] eid))
+;; => {:db/id 1, :person/name "Alice", :person/email "alice@test.com"}
+
+;; Resolvers automatically map :db/id to :person/id in Pathom results
+```
+
+**Benefits of Native IDs:**
+- Better performance (no lookup ref translation needed)
+- Compatibility with existing Datalevin databases
+- Simplified entity creation (auto-assigned IDs)
+- Smaller transaction payloads
+
+**Requirements:**
+- Must be `:long` type
+- Set `::dlo/native-id? true` on identity attribute
+- Schema generation automatically excludes native-id attributes
+
 ## API Endpoints
 
 - `POST /api` - Execute EQL queries via Pathom3
@@ -202,6 +240,9 @@ Or add to your aliases in `deps.edn`:
 - `email` (string, required, unique)
 - `active?` (boolean)
 - `created-at` (instant)
+- `role` (enum: `:admin`, `:user`, `:guest`)
+- `status` (enum: `:status/active`, `:status/inactive`, `:status/pending`)
+- `permissions` (enum, many: `:read`, `:write`, `:execute`)
 
 ### Category
 
@@ -216,6 +257,14 @@ Or add to your aliases in `deps.edn`:
 - `price` (double)
 - `in-stock` (int)
 - `category` (ref to category/id)
+
+### Person (Native ID Example)
+
+- `id` (long, identity, uses Datalevin's `:db/id`)
+- `name` (string, required)
+- `email` (string, required, unique)
+- `age` (long)
+- `bio` (string)
 
 ## Notes
 
