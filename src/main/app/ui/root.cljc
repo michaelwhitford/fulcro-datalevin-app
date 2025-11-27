@@ -66,6 +66,7 @@
    ro/row-pk                    account/id
    ro/columns                   [account/name account/email account/active?]
    ro/route                     "accounts"
+   ro/run-on-mount?             true
    ro/column-formatters {:account/name (fn [this v {:account/keys [id name]}]
                                          (dom/a {:onClick (fn [] (ri/edit! this AccountForm id))}
                                                 (str name)))}
@@ -100,6 +101,7 @@
    ro/row-pk                    category/id
    ro/columns                   [category/label]
    ro/route                     "categories"
+   ro/run-on-mount?             true
    ro/column-formatters {:category/label (fn [this v {:category/keys [id label]}]
                                            (dom/a {:onClick (fn [] (ri/edit! this CategoryForm id))}
                                                   (str label)))}
@@ -141,6 +143,7 @@
    ro/row-pk                    item/id
    ro/columns                   [item/name item/description item/price item/in-stock item/category]
    ro/route                     "items"
+   ro/run-on-mount?             true
    ro/column-formatters {:item/name (fn [this v {:item/keys [id name]}]
                                       (dom/a {:onClick (fn [] (ri/edit! this ItemForm id))}
                                              (str name)))

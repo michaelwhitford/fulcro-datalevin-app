@@ -3,6 +3,13 @@
 ## [Unreleased]
 
 ### Fixed
+- **Reports now load data on first navigation**
+  - Added `ro/run-on-mount? true` option to all report definitions (`AccountList`, `CategoryList`, `ItemList`)
+  - Data now populates immediately when navigating to list views, eliminating the need to navigate twice
+  
+  **Root Cause:** When using Fulcro RAD reports with statechart integration (`ri/report-state`), reports need to explicitly configure whether they should load data when first mounted. Without this flag set to `true`, the report component mounts but doesn't trigger its data load until something forces a refresh (like navigating away and back), or the user explicitly takes an action (like clicking a control button).
+  
+  **Solution:** Added the `ro/run-on-mount? true` option to each report definition. According to the RAD report options documentation: "Should this report run when it is first mounted, or wait for the user to explicitly take an action." This tells RAD to automatically load the report's data when the component first mounts or when the route is entered.
 - **Client-side form validation now properly enforces required fields**
   - Added `fo/validator` option to `AccountForm`, `CategoryForm`, and `ItemForm` using `attr/make-attribute-validator`
   - Empty strings and nil values in required fields are now properly rejected before save
