@@ -13,31 +13,39 @@
 (defn wrap-exceptions-as-form-errors
   ([handler]
    (fn [pathom-env]
-     (try (let [handler-result (handler pathom-env)]
+     (try
+       (let [handler-result (handler pathom-env)]
             handler-result)
           (catch Throwable t
             {::form/errors [{:message (str "Unexpected error saving form: " (ex-message t))}]})))))
 
 (defn validate-delta
   "Validates all attributes in a delta map according to their attribute definitions.
+   Delta format is: {[id-attr id] {attr {:before val :after val} ...} ...}
    Returns a vector of error maps if validation fails, or nil if all valid."
   [delta all-attributes]
-  (let [errors (reduce
-                (fn [errors [k v]]
-                  (if-let [attribute (some #(when (= k (::attr/qualified-key %)) %) all-attributes)]
-                    (if (attr/valid-value? attribute v {} k)
-                      errors
-                      (conj errors {:message (str "Invalid value for " k ": "
-                                                 (cond
-                                                   (and (string? v) (str/blank? v))
-                                                   "cannot be blank"
-                                                   
-                                                   (nil? v)
-                                                   "is required"
-                                                   
-                                                   :else
-                                                   "value is invalid"))}))
-                    errors))
+  (let [errors (reduce-kv
+                (fn [errors ident entity-delta]
+                  ;; For each entity in the delta
+                  (reduce-kv
+                   (fn [errors attr-key {:keys [after]}]
+                     ;; Validate the :after value for each attribute
+                     (if-let [attribute (some #(when (= attr-key (::attr/qualified-key %)) %) all-attributes)]
+                       (if (attr/valid-value? attribute after {} attr-key)
+                         errors
+                         (conj errors {:message (str "Invalid value for " attr-key ": "
+                                                    (cond
+                                                      (and (string? after) (str/blank? after))
+                                                      "cannot be blank"
+
+                                                      (nil? after)
+                                                      "is required"
+
+                                                      :else
+                                                      "value is invalid"))}))
+                       errors))
+                   errors
+                   entity-delta))
                 []
                 delta)]
     (when (seq errors)
@@ -48,21 +56,20 @@
    If validation fails, returns errors without calling the handler.
    Always includes ::form/errors in the response (nil if no errors) for Pathom3 compatibility."
   [handler]
-  (fn [pathom-env]
-    (let [form-params (::form/params pathom-env)
-          delta (:delta form-params)
-          attr-map (::attr/key->attribute pathom-env)
-          all-attributes (when attr-map (vals attr-map))]
+  (fn [{::attr/keys [key->attribute]
+        ::form/keys [params] :as env}]
+    (let [delta (:delta params)
+          all-attributes (when key->attribute (vals key->attribute))]
       (if-let [errors (and all-attributes delta (validate-delta delta all-attributes))]
         {::form/errors errors}
-        (let [result (handler pathom-env)]
+        (let [result (handler env)]
           ;; Always include ::form/errors (nil if no errors) so Pathom3 can resolve it
           (assoc result ::form/errors nil))))))
 
 (def save-middleware
   "RAD save middleware for Datalevin.
    This is a HANDLER FUNCTION that processes save operations.
-   
+
    Middleware execution order (outermost to innermost):
    1. wrap-attribute-validation - validates required fields before processing
    2. wrap-rewrite-values - applies value transformations

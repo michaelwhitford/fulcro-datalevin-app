@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+### Changed
+- **Updated tests to match upstream fulcro-rad-datalevin changes**
+  - Updated all-IDs resolver naming from `:account/all-accounts` to `:account/all` format
+  - Fixed validation tests to use correct RAD form delta format
+  - Fixed validation middleware to read delta from unqualified `:delta` key in params
+  
+  **Root Cause:** The upstream fulcro-rad-datalevin adapter had recent changes:
+  1. Simplified all-IDs resolver naming convention (commit 09950b1)
+  2. Changed from `:entity/all-entities` pattern to simpler `:entity/all` pattern
+  
+  **RAD Form Delta Format:** The correct format for form deltas is:
+  ```clojure
+  {:delta {[:entity/id id-value] 
+           {:attribute/key {:before old-val :after new-val}}}}
+  ```
+  Not the flat format that was being used in tests.
+  
+  **Validation Middleware Fix:** The middleware was looking for `::form/delta` (qualified keyword) but the params contain an unqualified `:delta` key, causing validation to be skipped.
+  
+  **Solution:**
+  - Updated `pathom_integration_test.clj` to query `:account/all`, `:category/all`, `:item/all` 
+  - Updated `resolver_test.clj` to match new resolver naming pattern `-all-resolver`
+  - Fixed all validation tests to use proper nested delta format with `:before` and `:after` values
+  - Updated `validate-delta` function to traverse nested delta structure
+  - Fixed `wrap-attribute-validation` to use `(:delta params)` instead of `::form/delta`
+
 ### Fixed
 - **Reports now load data on first navigation**
   - Added `ro/run-on-mount? true` option to all report definitions (`AccountList`, `CategoryList`, `ItemList`)

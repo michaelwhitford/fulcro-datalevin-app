@@ -1,5 +1,6 @@
 (ns app.test-utils
   "Utilities for testing Datalevin operations."
+  {:clj-kondo/config '{:lint-as {app.test-utils/with-test-db clojure.core/let}}}
   (:require
    [clojure.java.io :as io]
    [datalevin.core :as d]))

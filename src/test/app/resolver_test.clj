@@ -39,7 +39,7 @@
 (deftest all-ids-resolver-configuration
   (testing "All-IDs resolvers are properly configured"
     (let [resolvers (dl/generate-resolvers model/all-attributes :main)
-          all-ids-resolvers (filter #(re-find #"\.all-.*-resolver$" 
+          all-ids-resolvers (filter #(re-find #"-all-resolver$" 
                                                (str (::pco/op-name (pco/operation-config %))))
                                     resolvers)]
       

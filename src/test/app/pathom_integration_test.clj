@@ -1,5 +1,6 @@
 (ns app.pathom-integration-test
   "Integration tests for Pathom3 queries with Datalevin."
+  {:clj-kondo/config '{:linters {:unresolved-symbol {:exclude [(app.test-utils/with-test-db [conn])]}}}}
   (:require
    [clojure.test :refer [deftest testing is use-fixtures]]
    [datalevin.core :as d]
@@ -42,13 +43,13 @@
                            :account/active? true}])
       
       (let [parser (make-test-parser conn)
-            result (parser {} [{:account/all-accounts 
+            result (parser {} [{:account/all 
                                 [:account/id :account/name :account/email]}])]
         
-        (is (contains? result :account/all-accounts))
-        (is (= 2 (count (:account/all-accounts result))))
+        (is (contains? result :account/all))
+        (is (= 2 (count (:account/all result))))
         
-        (let [accounts (:account/all-accounts result)
+        (let [accounts (:account/all result)
               names (set (map :account/name accounts))]
           (is (contains? names "Alice"))
           (is (contains? names "Bob")))))))
@@ -89,13 +90,13 @@
                            :category/label "Clothing"}])
       
       (let [parser (make-test-parser conn)
-            result (parser {} [{:category/all-categorys 
+            result (parser {} [{:category/all 
                                 [:category/id :category/label]}])]
         
-        (is (contains? result :category/all-categorys))
-        (is (= 3 (count (:category/all-categorys result))))
+        (is (contains? result :category/all))
+        (is (= 3 (count (:category/all result))))
         
-        (let [categories (:category/all-categorys result)
+        (let [categories (:category/all result)
               labels (set (map :category/label categories))]
           (is (contains? labels "Electronics"))
           (is (contains? labels "Books"))
@@ -134,16 +135,16 @@
         
         (let [parser (make-test-parser conn)
               result (parser {}
-                             [{:item/all-items
+                             [{:item/all
                                [:item/id
                                 :item/name
                                 :item/price
                                 {:item/category [:category/id :category/label]}]}])]
           
-          (is (contains? result :item/all-items))
-          (is (= 2 (count (:item/all-items result))))
+          (is (contains? result :item/all))
+          (is (= 2 (count (:item/all result))))
           
-          (let [items (:item/all-items result)
+          (let [items (:item/all result)
                 laptop (first (filter #(= "Laptop" (:item/name %)) items))
                 book (first (filter #(= "Clojure Book" (:item/name %)) items))]
             
@@ -192,10 +193,10 @@
   (testing "Query returns empty collection when no data exists"
     (with-test-db [conn test-schema]
       (let [parser (make-test-parser conn)
-            result (parser {} [{:account/all-accounts [:account/id :account/name]}])]
+            result (parser {} [{:account/all [:account/id :account/name]}])]
         
-        (is (contains? result :account/all-accounts))
-        (is (empty? (:account/all-accounts result)))))))
+        (is (contains? result :account/all))
+        (is (empty? (:account/all result)))))))
 
 (deftest query-nonexistent-entity
   (testing "Query for non-existent entity ID"

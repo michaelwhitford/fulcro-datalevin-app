@@ -1,5 +1,6 @@
 (ns app.constraint-test
   "Tests for database constraints (unique values, identity, etc.)."
+  {:clj-kondo/config '{:linters {:unresolved-symbol {:exclude [(app.test-utils/with-test-db [conn])]}}}}
   (:require
    [clojure.test :refer [deftest testing is]]
    [datalevin.core :as d]

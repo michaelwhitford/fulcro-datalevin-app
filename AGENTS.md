@@ -10,6 +10,7 @@ The clj-nrepl-eval tool should have access to both a clj and cljs nrepl for this
 
 - **Run all tests**: `clojure -M:run-tests`
 - **Run single test**: `clojure -M:run-tests --focus app.middleware-test/save-middleware-is-a-function`
+- **Lint command**: `clj-kondo --lint .`
 - **Clean build artifacts**: `bb clean`
 - **Check outdated deps**: `clojure -M:outdated`
 

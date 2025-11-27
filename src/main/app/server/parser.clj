@@ -16,7 +16,7 @@
    [app.server.middleware :as middleware]
    [datalevin.core :as d]))
 
-;; Generate automatic resolvers from the database adapter
+;; Generate automatic resolvers from the database adapter we are testing with this app
 (def automatic-resolvers (vec (concat (res/generate-resolvers model/all-attributes)
                                       (dl/generate-resolvers model/all-attributes :main))))
 

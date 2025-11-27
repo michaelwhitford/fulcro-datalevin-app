@@ -1,5 +1,6 @@
 (ns app.crud-test
   "Tests for basic CRUD operations using Datalevin."
+  {:clj-kondo/config '{:linters {:unresolved-symbol {:exclude [(app.test-utils/with-test-db [conn])]}}}}
   (:require
    [clojure.test :refer [deftest testing is use-fixtures]]
    [datalevin.core :as d]
