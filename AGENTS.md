@@ -1,9 +1,10 @@
 # Agent Guide for Datalevin RAD Test Application
 
-Use a single PLAN.md for planning. Use a single CHANGELOG.md for changes.
+Use a single PLAN.md for planning. Use a single CHANGELOG.md for changes. Do not create intermediary summary documents.
 This is a test application to verify the functionality of a database adapter named fulcro-rad-datalevin
 This project is checked out at /Users/mwhitford/src/datalevin-test-app
 The database adapter is checked out at /Users/mwhitford/src/datalevin-test-app
+The clj-nrepl-eval tool should have access to both a clj and cljs nrepl for this project, use them as needed to fulfill user requests.
 
 ## Build & Test Commands
 

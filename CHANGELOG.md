@@ -2,6 +2,63 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2025-11-27] - Report Join Query Bug Fix
+
+### Fixed
+- **Critical report query bug**: Category labels not displaying in ItemList report
+  - Root cause: Duplicate `:item/category` in row query (both as join and plain keyword)
+  - Using `ro/row-query-inclusion` added join but column was also added as plain keyword
+  - Pathom received query with both `{:item/category [:category/id :category/label]}` AND `:item/category`
+  - When same key appears as both join and keyword, Pathom only returns reference ID
+  - Backend was working correctly, but duplicate query keys caused data loss
+
+### Changed
+- **Replaced `ro/row-query-inclusion` with `ro/columns-EQL`** in `ItemList` report
+  - `ro/columns-EQL {:item/category [:category/id :category/label]}` 
+  - Overrides the default EQL for the `:item/category` column
+  - Prevents duplicate query keys by replacing plain keyword with join
+  - Row query now correctly: `[:item/name ... {:item/category [:category/id :category/label]} :item/id]`
+- Column formatter now receives complete category data with label
+- Data normalizes correctly with category labels preserved in the `:item/id` table
+
+### Technical Details
+- **RAD report query options**:
+  - `ro/query-inclusions`: Adds to top-level report query only
+  - `ro/row-query-inclusion`: Adds additional fields to row query (can cause duplicates if field is also in columns)
+  - `ro/columns-EQL`: Overrides EQL for specific columns (preferred for joins) - prevents duplicates
+- **Key lesson**: For reference columns needing joins, use `ro/columns-EQL`, not `ro/row-query-inclusion`
+- **Normalization works correctly**: Category data `{:category/id uuid :category/label "..."}` stored inline in item entities
+- `ro/denormalize? true` is NOT required - standard normalization preserves nested maps without idents
+- Verified via backend Pathom query and CLJS REPL state inspection
+
+## [2025-11-27] - UI Components for Items and Categories
+
+### Added
+- **Category UI components**:
+  - `CategoryForm` - Form component for creating/editing categories
+  - `CategoryList` - Report component displaying all categories
+  - Category dropdown menu in navigation
+  - Routes for `/categories` and `/category/:id`
+- **Item UI components**:
+  - `ItemForm` - Form component for creating/editing items (with category reference)
+  - `ItemList` - Report component displaying all items
+  - Item dropdown menu in navigation
+  - Routes for `/items` and `/item/:id`
+- **Model enhancements**:
+  - Added `:category/all-categories` resolver attribute
+  - Added `:item/all-items` resolver attribute
+
+### Changed
+- Updated `app.ui.root` with Category and Item forms/reports following Account pattern
+- Enhanced navigation menu with Category and Item dropdowns
+- Updated application statechart with new routes
+
+### Features
+- Full CRUD operations for Categories
+- Full CRUD operations for Items
+- Category reference picker in Item form
+- Consistent UI patterns across all entities
+
 ## [2025-11-27] - Server-Side Validation
 
 ### Added

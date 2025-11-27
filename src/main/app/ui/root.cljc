@@ -30,7 +30,7 @@
    [app.model.item :as item]
    #?(:cljs [taoensso.timbre :as log])))
 
-;; Simple Account Item Component
+;; Account Form and Report
 
 (form/defsc-form AccountForm [this props]
   {fo/id account/id
@@ -60,7 +60,7 @@
 
 (report/defsc-report AccountList [this props]
   {ro/title                     "All Accounts"
-   ro/source-attribute          :account/all-accounts
+   ro/source-attribute          :account/all
    ro/row-pk                    account/id
    ro/columns                   [account/name account/email account/active?]
    ro/route                     "accounts"
@@ -80,6 +80,83 @@
   #_(report/render-layout this))
 
 (def ui-account-list (comp/factory AccountList {:keyfn :account/id}))
+
+;; Category Form and Report
+
+(form/defsc-form CategoryForm [this props]
+  {fo/id category/id
+   fo/attributes [category/label]
+   fo/route-prefix "category"
+   fo/title "Edit Category"
+   fo/debug? true
+   fo/cancel-route ::CategoryList})
+
+(report/defsc-report CategoryList [this props]
+  {ro/title                     "All Categories"
+   ro/source-attribute          :category/all
+   ro/row-pk                    category/id
+   ro/columns                   [category/label]
+   ro/route                     "categories"
+   ro/column-formatters {:category/label (fn [this v {:category/keys [id label]}]
+                                           (dom/a {:onClick (fn [] (ri/edit! this CategoryForm id))}
+                                                  (str label)))}
+   ro/controls  {::new-category {:type :button
+                                 :local? true
+                                 :label "New Category"
+                                 :action (fn [this _] (ri/create! this CategoryForm))}}
+
+   ro/row-actions [{:label "Delete"
+                    :action (fn [this {:category/keys [id] :as row}]
+                              (form/delete! this :category/id id))}]
+
+   ro/control-layout {:action-buttons [::new-category]}})
+
+(def ui-category-list (comp/factory CategoryList {:keyfn :category/id}))
+
+;; Item Form and Report
+
+(defsc CategoryQuery [_ _]
+  {:query [:category/id :category/label]
+   :ident :category/id})
+
+(form/defsc-form ItemForm [this props]
+  {fo/id item/id
+   fo/attributes [item/name item/description item/price item/in-stock item/category]
+   fo/route-prefix "item"
+   fo/title "Edit Item"
+   fo/debug? true
+   fo/cancel-route ::ItemList
+   ;; Optional: Allow creating new categories directly from the item form picker
+   ;; Uncomment the line below to enable this feature:
+   #_#_fo/field-options {:item/category {com.fulcrologic.rad.picker-options/form CategoryForm}}})
+
+(report/defsc-report ItemList [this props]
+  {ro/title                     "All Items"
+   ro/source-attribute          :item/all
+   ro/columns-EQL               {:item/category [:category/id :category/label]}
+   ro/row-pk                    item/id
+   ro/columns                   [item/name item/description item/price item/in-stock item/category]
+   ro/route                     "items"
+   ro/column-formatters {:item/name (fn [this v {:item/keys [id name]}]
+                                      (dom/a {:onClick (fn [] (ri/edit! this ItemForm id))}
+                                             (str name)))
+                         :item/category (fn [this v {:item/keys [category] :as row}]
+                                          ;; v is the category value; should be {:category/id uuid :category/label "..."}
+                                          ;; if the backend query worked properly
+                                          (let [label (or (:category/label v) (:category/label category) "None")]
+                                            (dom/span (str label))))}
+   ro/controls  {::new-item {:type :button
+                             :local? true
+                             :label "New Item"
+                             :action (fn [this _] (ri/create! this ItemForm))}}
+
+   ro/row-actions [{:label "Delete"
+                    :action (fn [this {:item/keys [id] :as row}]
+                              (form/delete! this :item/id id))}]
+
+   ro/control-layout {:action-buttons [::new-item]}})
+
+(def ui-item-list (comp/factory ItemList {:keyfn :item/id}))
 
 (defsc LandingPage [this props]
   {:query [:ui/ready?]
@@ -121,6 +198,14 @@
                                          (ui-dropdown-menu {}
                                                            (ui-dropdown-item {:onClick (fn [] (uir/route-to! this `AccountList))} " View All ")
                                                            (ui-dropdown-item {:onClick (fn [] (ri/create! this `AccountForm))} " New ")))
+                            (ui-dropdown {:className " item " :text " Category "}
+                                         (ui-dropdown-menu {}
+                                                           (ui-dropdown-item {:onClick (fn [] (uir/route-to! this `CategoryList))} " View All ")
+                                                           (ui-dropdown-item {:onClick (fn [] (ri/create! this `CategoryForm))} " New ")))
+                            (ui-dropdown {:className " item " :text " Item "}
+                                         (ui-dropdown-menu {}
+                                                           (ui-dropdown-item {:onClick (fn [] (uir/route-to! this `ItemList))} " View All ")
+                                                           (ui-dropdown-item {:onClick (fn [] (ri/create! this `ItemForm))} " New ")))
                             (dom/div :.right.menu
                                      (dom/div :.ui.item
                                               (dom/i :.ui.icon.user)))))
@@ -144,7 +229,15 @@
                            (ri/report-state {:route/target `AccountList
                                              :route/path ["accounts"]})
                            (ri/form-state {:route/target `AccountForm
-                                           :route/path ["account"]})))))
+                                           :route/path ["account"]})
+                           (ri/report-state {:route/target `CategoryList
+                                             :route/path ["categories"]})
+                           (ri/form-state {:route/target `CategoryForm
+                                           :route/path ["category"]})
+                           (ri/report-state {:route/target `ItemList
+                                             :route/path ["items"]})
+                           (ri/form-state {:route/target `ItemForm
+                                           :route/path ["item"]})))))
 
 (comment
   (comp/get-query Root)

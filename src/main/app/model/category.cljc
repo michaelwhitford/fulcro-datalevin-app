@@ -7,7 +7,9 @@
 
 (defattr id :category/id :uuid
   {ao/identity? true
-   ao/schema    :main})
+   ao/schema    :main
+   ;; Specify which attribute to use as the label when this entity is referenced
+   ao/label     :category/label})
 
 (defattr label :category/label :string
   {ao/schema     :main
