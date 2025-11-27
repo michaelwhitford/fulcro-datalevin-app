@@ -21,6 +21,7 @@
    [com.fulcrologic.rad.report-options :as ro]
    [com.fulcrologic.fulcro.routing.dynamic-routing :refer [defrouter]]
    [com.fulcrologic.rad.control :as control]
+   [com.fulcrologic.rad.attributes :as attr]
    [com.fulcrologic.statecharts.chart :refer [statechart]]
    [com.fulcrologic.statecharts.integration.fulcro.rad-integration :as ri]
    [com.fulcrologic.statecharts.integration.fulcro :as scf]
@@ -35,6 +36,7 @@
 (form/defsc-form AccountForm [this props]
   {fo/id account/id
    fo/attributes [account/name account/email account/active?]
+   fo/validator (attr/make-attribute-validator [account/name account/email account/active?])
    fo/default-values {:account/active? true}
    fo/route-prefix "account"
    fo/title "Edit Account"
@@ -86,6 +88,7 @@
 (form/defsc-form CategoryForm [this props]
   {fo/id category/id
    fo/attributes [category/label]
+   fo/validator (attr/make-attribute-validator [category/label])
    fo/route-prefix "category"
    fo/title "Edit Category"
    fo/debug? true
@@ -122,6 +125,7 @@
 (form/defsc-form ItemForm [this props]
   {fo/id item/id
    fo/attributes [item/name item/description item/price item/in-stock item/category]
+   fo/validator (attr/make-attribute-validator [item/name item/description item/price item/in-stock item/category])
    fo/route-prefix "item"
    fo/title "Edit Item"
    fo/debug? true
