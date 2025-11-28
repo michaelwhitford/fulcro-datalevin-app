@@ -18,6 +18,7 @@
    [taoensso.timbre :as log]
    [app.application :refer [SPA]]
    [app.ui.root :as root]
+   [us.whitford.fulcro-radar.api :as radar]
    [com.fulcrologic.statecharts.integration.fulcro :as scf]))
 
 (defn setup-RAD [app]
@@ -62,3 +63,6 @@
   ; enable :ui/ready?
   (comp/transact! app [(application-ready {})])
   (log/info "App mounted and initialized"))
+
+(comment
+  (radar/send-diagnostic! SPA))

@@ -1,11 +1,13 @@
 (ns development
   (:require
    [clojure.tools.namespace.repl :as tools-ns :refer [set-refresh-dirs]]
+   [clojure.string :as str]
    [mount.core :as mount]
    [taoensso.timbre :as log]
    [us.whitford.fulcro.rad.database-adapters.datalevin :as dl]
    [datalevin.core :as d]
    [app.server.database :refer [connections]]
+   [app.server.parser :refer [parser]]
    [app.server.ring-middleware]
    [app.server.http-server]
    [app.model :as model]))
@@ -131,10 +133,26 @@
   (stop)
   (tools-ns/refresh :after 'development/start))
 
+;; ================================================================================
+;; AI Overview - Query the diagnostic resolver for troubleshooting
+;; ================================================================================
+
+(defn ai-overview
+  "Query the diagnostic resolver for a RAD application overview.
+   Prints a text report and returns the data map.
+   Uses the Pathom parser with full env access."
+  []
+  (let [result (parser {} [:radar/report :radar/overview])]
+    (println (:radar/report result))
+    (:radar/overview result)))
+
 (comment
   (start)
   (stop)
   (restart)
+
+  ;; Generate AI overview for troubleshooting
+  (ai-overview)
 
   ;; Clear and reseed the database
   (clear-and-seed!)
@@ -144,7 +162,4 @@
          :where
          [?e :account/name ?name]
          [?e :account/email ?email]]
-       (d/db (:main connections)))
-
-  ;; Get database metrics
-  (dl/get-metrics))
+       (d/db (:main connections))))

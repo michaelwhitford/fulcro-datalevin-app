@@ -10,6 +10,9 @@
 
            ;; Local checkout of the datalevin plugin
            us.whitford/fulcro-rad-datalevin {:local/root "/Users/mwhitford/src/fulcro-rad-datalevin"}
+           
+           ;; Local checkout of RADAR diagnostics
+           us.whitford/fulcro-radar {:local/root "/Users/mwhitford/src/fulcro-radar"}
 
            ;; Pathom3
            com.wsscode/pathom3           {:mvn/version "2025.01.16-alpha"}

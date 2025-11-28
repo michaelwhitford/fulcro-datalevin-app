@@ -3,6 +3,16 @@
 ## [Unreleased]
 
 ### Added
+- **Enhanced AI Diagnostic Report with additional metadata**
+  - Added **Relationships** section showing entity reference relationships (e.g., `item/category -> category/id`)
+  - Added **Enums** section displaying all enumerated attributes with their allowed values and cardinality
+  - Added **Constraints** section showing:
+    - Required fields (attributes with `ao/required? true`)
+    - Unique constraints (from Datalevin schema `db/unique`)
+    - Native IDs (attributes using `dlo/native-id?`)
+  - Added **Configuration** section showing HTTP port, database paths, and CSRF status
+  - Updated summary line to include counts for refs and enums
+  - These additions help AI assistants and developers quickly understand the full data model, validation rules, and server configuration
 - **Native-id support for integration testing**
   - Added new `Person` entity model with native-id support:
     - `:person/id` - Uses Datalevin's built-in `:db/id` (`:long` type with `::dlo/native-id? true`)

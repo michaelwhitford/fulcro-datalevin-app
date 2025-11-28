@@ -5,11 +5,10 @@
    [com.fulcrologic.rad.attributes :as attr]
    [com.fulcrologic.rad.form :as form]
    [com.fulcrologic.rad.resolvers :as res]
-   [com.fulcrologic.rad.report :as report]
    [com.fulcrologic.rad.pathom3 :as pathom3]
    [us.whitford.fulcro.rad.database-adapters.datalevin :as dl]
-   [us.whitford.fulcro.rad.database-adapters.datalevin-options :as dlo]
    [us.whitford.fulcro.rad.database-adapters.datalevin-common :as common]
+   [us.whitford.fulcro-radar.api :as radar]
    [app.model :as model]
    [app.server.config :refer [config]]
    [app.server.database :refer [connections]]
@@ -24,10 +23,13 @@
   :start
   (let [env-middleware (-> (attr/wrap-env model/all-attributes)
                            (form/wrap-env middleware/save-middleware middleware/delete-middleware)
-                           (common/wrap-env (fn [env] {:main (:main connections)}) d/db))]
+                           (common/wrap-env (fn [env] {:main (:main connections)}) d/db)
+                           ;; Add RADAR diagnostics - database-agnostic!
+                           (radar/wrap-env {:ui-ns 'app.ui.root}))]
     (pathom3/new-processor config env-middleware []
                            [automatic-resolvers
-                            form/resolvers])))
+                            form/resolvers
+                            radar/resolvers])))
 
 (comment
   (tap> {:from :repl :automatic-resolvers automatic-resolvers}))
