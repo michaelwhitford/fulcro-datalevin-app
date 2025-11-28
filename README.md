@@ -33,19 +33,6 @@ clojure -M:run-tests --focus app.crud-test
 clojure -M:run-tests --focus app.crud-test/create-single-account
 ```
 
-Test coverage includes:
-
-- **CRUD Operations** - Create, Read, Update, Delete for all entity types
-- **Schema Generation** - Automatic Datalevin schema from RAD attributes
-- **Resolver Generation** - Pathom3 resolver creation and configuration
-- **Constraints** - Unique values, identity attributes, references
-- **Pathom Integration** - Query processing and navigation
-- **Middleware** - Save and delete middleware configuration
-- **Native ID Support** - Datalevin's built-in `:db/id` as identity attribute
-- **Enum Support** - Single and many-cardinality enum attributes
-
-See [TEST_SUMMARY.md](TEST_SUMMARY.md) for detailed test documentation.
-
 ## Project Structure
 
 ```
@@ -79,15 +66,12 @@ datalevin-test-app/
 
 This project includes **fulcro-radar** for AI-assisted troubleshooting:
 
-- 🎯 **Fulcro-RADAR Integration** - Single-query diagnostics via `(parser {} [:radar/overview])`
-
 ### Quick Health Check
 
 ```clojure
 ;; Single command shows: mount states, entities, forms, reports,
 ;; enums, constraints, relationships, and entity counts
-(require '[app.server.parser :refer [parser]])
-(parser {} [:radar/overview])
+(app.server.parser/parser {} [:radar/overview])
 ```
 
 ## Quick Start
