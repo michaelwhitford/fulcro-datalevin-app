@@ -129,9 +129,9 @@
                                            {:account/id {:before nil :after account-id}
                                             :account/name {:before nil :after "Valid Name"}
                                             :account/email {:before nil :after "valid@example.com"}}}})])]
-        ;; The save should NOT return errors
-        (is (nil? (get-in result ['com.fulcrologic.rad.form/save-form ::form/errors]))
-            "Save should not return errors for valid data")))))
+        ;; The save should return an empty errors vector (RAD convention)
+        (is (= [] (get-in result ['com.fulcrologic.rad.form/save-form ::form/errors]))
+            "Save should return empty errors vector for valid data")))))
 
 (deftest save-middleware-should-reject-whitespace-only-name
   (testing "Save middleware should treat whitespace-only strings as invalid for required fields"

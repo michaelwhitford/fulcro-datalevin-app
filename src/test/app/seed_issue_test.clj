@@ -19,7 +19,7 @@
 
 (deftest enum-entities-exist-after-schema-creation
   (testing "Enum values are automatically transacted when database starts"
-    (with-test-db [conn test-schema]
+    (with-test-db [conn test-schema :attributes model/all-attributes]
       (let [db (d/db conn)
             ;; This is the query used by seed! to check if database has data
             entities (d/q '[:find ?e :where [?e _ _]] db)]
@@ -47,7 +47,7 @@
 
 (deftest seed-check-incorrectly-detects-data
   (testing "seed! incorrectly detects enum entities as user data"
-    (with-test-db [conn test-schema]
+    (with-test-db [conn test-schema :attributes model/all-attributes]
       (let [db (d/db conn)
             ;; This is the exact check used by seed! function
             has-data? (seq (d/q '[:find ?e :where [?e _ _]] db))]
@@ -79,7 +79,7 @@
 
 (deftest better-seed-check
   (testing "A better way to check if database needs seeding"
-    (with-test-db [conn test-schema]
+    (with-test-db [conn test-schema :attributes model/all-attributes]
       (let [db (d/db conn)
             ;; Better check: look for actual user data, not just any entity
             has-user-data? (or (seq (d/q '[:find ?e :where [?e :account/name _]] db))

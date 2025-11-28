@@ -54,7 +54,7 @@
 (defn wrap-attribute-validation
   "Middleware wrapper that validates all attributes in the delta before saving.
    If validation fails, returns errors without calling the handler.
-   Always includes ::form/errors in the response (nil if no errors) for Pathom3 compatibility."
+   Always includes ::form/errors in the response (empty vector if no errors) for Fulcro RAD."
   [handler]
   (fn [{::attr/keys [key->attribute]
         ::form/keys [params] :as env}]
@@ -63,8 +63,8 @@
       (if-let [errors (and all-attributes delta (validate-delta delta all-attributes))]
         {::form/errors errors}
         (let [result (handler env)]
-          ;; Always include ::form/errors (nil if no errors) so Pathom3 can resolve it
-          (assoc result ::form/errors nil))))))
+          ;; Always include ::form/errors (empty vector if no errors) for Fulcro RAD
+          (assoc result ::form/errors []))))))
 
 (def save-middleware
   "RAD save middleware for Datalevin.

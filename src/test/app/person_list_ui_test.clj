@@ -12,6 +12,8 @@
    [us.whitford.fulcro.rad.database-adapters.datalevin-options :as dlo]
    [com.fulcrologic.rad.attributes :as attr]
    [com.wsscode.pathom3.connect.operation :as pco]
+   [com.wsscode.pathom3.connect.indexes :as pci]
+   [com.wsscode.pathom3.interface.eql :as p.eql]
    [app.test-utils :refer [with-test-db]]
    [app.model :as model]
    [app.model.person :as person]))
@@ -47,7 +49,7 @@
 ;; =============================================================================
 
 (deftest person-all-resolver-returns-full-data
-  (testing "person-all-resolver returns all person attributes, not just IDs"
+  (testing "person-all-resolver returns all person attributes when using join query"
     (with-test-db [conn test-schema]
       ;; Create test persons
       (d/transact! conn [{:person/name "Alice"
@@ -59,24 +61,21 @@
       
       (let [db (d/db conn)
             resolvers (dl/generate-resolvers model/all-attributes :main)
-            person-all-resolver (first (filter #(= 'person-all-resolver 
-                                                    (::pco/op-name (pco/operation-config %)))
-                                               resolvers))
             
-            ;; Create resolver environment
-            env {::dlo/connections {:main conn}
-                 ::dlo/databases {:main db}
-                 ::attr/key->attribute (into {} (map (juxt ::attr/qualified-key identity))
-                                             model/all-attributes)}
+            ;; Create Pathom environment with proper registry
+            env (-> {::dlo/connections {:main conn}
+                     ::dlo/databases {:main db}
+                     ::attr/key->attribute (into {} (map (juxt ::attr/qualified-key identity))
+                                                 model/all-attributes)}
+                    (pci/register resolvers))
             
-            ;; Execute resolver with query specifying which fields to return
-            ;; This simulates what the PersonList report does
-            result ((:resolve person-all-resolver) 
-                    env 
-                    {:person/all {:person/id [:person/id :person/name :person/email :person/age]}})]
+            ;; Use Pathom's process to execute a join query
+            ;; This is how RAD reports work - they query with joins to get full data
+            result (p.eql/process env [{:person/all [:person/id :person/name :person/email :person/age]}])]
         
-        (testing "Resolver returns person data"
-          (is (some? result) "Resolver should return a result")
+        (testing "Query returns person data"
+          (is (some? result) "Query should return a result")
+          (is (map? result) "Result should be a map")
           (is (contains? result :person/all) "Result should have :person/all key")
           (is (seq (:person/all result)) "Should have person records"))
         
@@ -89,22 +88,22 @@
                 (is (some? (:person/id person-data)) 
                     "Should have :person/id")
                 (is (some? (:person/name person-data)) 
-                    "FAILING: Should have :person/name but it's missing!")
+                    "Should have :person/name")
                 (is (some? (:person/email person-data)) 
-                    "FAILING: Should have :person/email but it's missing!")
+                    "Should have :person/email")
                 (is (number? (:person/age person-data)) 
-                    "FAILING: Should have :person/age but it's missing!")))))
+                    "Should have :person/age")))))
         
         (testing "Person names are correct"
           (let [persons (:person/all result)
                 names (set (map :person/name persons))]
             (is (contains? names "Alice") 
-                "FAILING: Should contain Alice's name")
+                "Should contain Alice's name")
             (is (contains? names "Bob") 
-                "FAILING: Should contain Bob's name")))))))
+                "Should contain Bob's name")))))))
 
 (deftest person-all-resolver-output-configuration
-  (testing "person-all-resolver is configured to output all person attributes"
+  (testing "person-all-resolver is configured to output person IDs only"
     (let [resolvers (dl/generate-resolvers model/all-attributes :main)
           person-all-resolver (first (filter #(= 'person-all-resolver 
                                                   (::pco/op-name (pco/operation-config %)))
@@ -119,23 +118,18 @@
           (testing "Resolver output configuration"
             (is (some? output) "Should have output configuration")
             
-            ;; The output should include a map structure for :person/all
-            ;; that specifies all the person attributes
-            (testing "Output includes person attributes"
+            ;; The all-ids resolver only outputs IDs
+            ;; Additional fields are resolved via join queries using the ID resolver
+            (testing "Output includes :person/all with :person/id"
               (is (some #(and (map? %) (contains? % :person/all)) output)
                   "Output should include :person/all map")
               
               (let [person-all-spec (first (filter map? output))
                     person-attrs (get person-all-spec :person/all)]
-                (when person-attrs
-                  (is (some #{:person/id} person-attrs) 
-                      "Should output :person/id")
-                  (is (some #{:person/name} person-attrs) 
-                      "Should output :person/name")
-                  (is (some #{:person/email} person-attrs) 
-                      "Should output :person/email")
-                  (is (some #{:person/age} person-attrs) 
-                      "Should output :person/age"))))))))))
+                (is (vector? person-attrs) 
+                    "person/all should be a vector")
+                (is (= [:person/id] person-attrs) 
+                    "person-all-resolver should only output :person/id; additional fields come from join queries")))))))))
 
 (deftest person-id-resolver-returns-full-data
   (testing "person.id-resolver returns all person attributes for a given ID"
@@ -189,24 +183,16 @@
               person-eid (ffirst (d/q '[:find ?e :where [?e :person/name "Test Person"]] db))
               resolvers (dl/generate-resolvers model/all-attributes :main)
               
-              account-all-resolver (first (filter #(= 'account-all-resolver 
-                                                       (::pco/op-name (pco/operation-config %)))
-                                                  resolvers))
-              person-all-resolver (first (filter #(= 'person-all-resolver 
-                                                      (::pco/op-name (pco/operation-config %)))
-                                                 resolvers))
+              ;; Create Pathom environment for executing join queries
+              env (-> {::dlo/connections {:main conn}
+                       ::dlo/databases {:main db}
+                       ::attr/key->attribute (into {} (map (juxt ::attr/qualified-key identity))
+                                                   model/all-attributes)}
+                      (pci/register resolvers))
               
-              env {::dlo/connections {:main conn}
-                   ::dlo/databases {:main db}
-                   ::attr/key->attribute (into {} (map (juxt ::attr/qualified-key identity))
-                                               model/all-attributes)}
-              
-              account-result ((:resolve account-all-resolver) 
-                              env 
-                              {:account/all {:account/id [:account/id :account/name :account/email]}})
-              person-result ((:resolve person-all-resolver) 
-                             env 
-                             {:person/all {:person/id [:person/id :person/name :person/email :person/age]}})]
+              ;; Execute join queries via Pathom (not calling resolvers directly)
+              account-result (p.eql/process env [{:account/all [:account/id :account/name :account/email]}])
+              person-result (p.eql/process env [{:person/all [:person/id :person/name :person/email :person/age]}])]
           
           (testing "Account resolver returns full data (baseline)"
             (let [accounts (:account/all account-result)
@@ -220,11 +206,11 @@
                   person (first persons)]
               (is (= person-eid (:person/id person)))
               (is (= "Test Person" (:person/name person)) 
-                  "FAILING: Person resolver should return name like Account resolver does")
+                  "Person resolver should return name like Account resolver does")
               (is (= "person@test.com" (:person/email person)) 
-                  "FAILING: Person resolver should return email like Account resolver does")
+                  "Person resolver should return email like Account resolver does")
               (is (= 25 (:person/age person)) 
-                  "FAILING: Person resolver should return age"))))))))
+                  "Person resolver should return age"))))))))
 
 (comment
   ;; Run all person UI tests
