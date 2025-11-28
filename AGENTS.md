@@ -6,6 +6,16 @@ This project is checked out at /Users/mwhitford/src/datalevin-test-app
 The database adapter is checked out at /Users/mwhitford/src/datalevin-test-app
 The clj-nrepl-eval tool should have access to both a clj and cljs nrepl for this project, use them as needed to fulfill user requests.
 
+## Diagnostic Tools & Documentation
+
+**ALWAYS start troubleshooting with RADAR diagnostics:**
+
+```clojure
+(app.server.parser/parser {} [:radar/overview])
+```
+
+This single query returns: Mount states, entities, forms, reports, enums, constraints, relationships, entity counts, and issues.
+
 ## Build & Test Commands
 
 - **Run all tests**: `clojure -M:run-tests`

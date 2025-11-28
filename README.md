@@ -34,6 +34,7 @@ clojure -M:run-tests --focus app.crud-test/create-single-account
 ```
 
 Test coverage includes:
+
 - **CRUD Operations** - Create, Read, Update, Delete for all entity types
 - **Schema Generation** - Automatic Datalevin schema from RAD attributes
 - **Resolver Generation** - Pathom3 resolver creation and configuration
@@ -72,6 +73,21 @@ datalevin-test-app/
 │   └── public/
 │       └── index.html       # Application entry point
 └── data/                    # Database storage (created at runtime)
+```
+
+## Troubleshooting & Diagnostics
+
+This project includes **fulcro-radar** for AI-assisted troubleshooting:
+
+- 🎯 **Fulcro-RADAR Integration** - Single-query diagnostics via `(parser {} [:radar/overview])`
+
+### Quick Health Check
+
+```clojure
+;; Single command shows: mount states, entities, forms, reports,
+;; enums, constraints, relationships, and entity counts
+(require '[app.server.parser :refer [parser]])
+(parser {} [:radar/overview])
 ```
 
 ## Quick Start
@@ -197,12 +213,14 @@ Native IDs allow entities to use Datalevin's built-in `:db/id` directly:
 ```
 
 **Benefits of Native IDs:**
+
 - Better performance (no lookup ref translation needed)
 - Compatibility with existing Datalevin databases
 - Simplified entity creation (auto-assigned IDs)
 - Smaller transaction payloads
 
 **Requirements:**
+
 - Must be `:long` type
 - Set `::dlo/native-id? true` on identity attribute
 - Schema generation automatically excludes native-id attributes
