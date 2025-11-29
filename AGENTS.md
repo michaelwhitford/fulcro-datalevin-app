@@ -5,16 +5,30 @@ This is a test application to verify the functionality of a database adapter nam
 This project is checked out at /Users/mwhitford/src/datalevin-test-app
 The database adapter is checked out at /Users/mwhitford/src/datalevin-test-app
 The clj-nrepl-eval tool should have access to both a clj and cljs nrepl for this project, use them as needed to fulfill user requests.
+The app should have a clj and cljs repl started from the editor.
+
+App restarts can be accomplished from the repl:
+
+```clojure
+(require 'development)
+(development/restart)
+```
 
 ## Diagnostic Tools & Documentation
 
 **ALWAYS start troubleshooting with RADAR diagnostics:**
 
+This query returns useful fulcro-rad diagnostic data
+
 ```clojure
 (app.server.parser/parser {} [:radar/overview])
 ```
 
-This single query returns: Mount states, entities, forms, reports, enums, constraints, relationships, entity counts, and issues.
+This query returns the pathom-env available to resolvers
+
+```clojure
+(app.server.parser/parser {} [:radar/pathom-env])
+```
 
 ## Build & Test Commands
 
@@ -63,3 +77,7 @@ This single query returns: Mount states, entities, forms, reports, enums, constr
 - Mount for stateful components (`defstate parser`, `defstate connections`)
 - Pathom3 for backend query processing with auto-generated resolvers
 - Datalevin requires JVM flag: `--enable-native-access=ALL-UNNAMED`
+
+```
+
+```

@@ -61,3 +61,6 @@
    fo/field-style        :pick-many})
 
 (def attributes [id name email active? created-at role status permissions])
+
+(comment
+  (app.server.parser/parser {} [:radar/overview]))
