@@ -14,7 +14,9 @@
 (defattr name :account/name :string
   {ao/schema     :main
    ao/identities #{:account/id}
-   ao/required?  true})
+   ao/required?  true
+   ;; Full-text searchable: generates :db/fulltext schema + the :account/search resolver
+   #?@(:clj [:us.whitford.fulcro.rad.database-adapters.datalevin-options/fulltext? true])})
 
 (defattr email :account/email :string
   {ao/schema     :main

@@ -34,6 +34,8 @@
 
 (defattr bio :person/bio :string
   {ao/schema     :main
-   ao/identities #{:person/id}})
+   ao/identities #{:person/id}
+   ;; Full-text searchable on a native-id entity: :person/search returns eids as ids
+   #?@(:clj [dlo/fulltext? true])})
 
 (def attributes [id name email age bio])

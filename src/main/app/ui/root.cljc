@@ -110,6 +110,25 @@
    ro/control-layout {:action-buttons [::new-account]}}
   #_(report/render-layout this))
 
+(report/defsc-report AccountSearchList [this props]
+  {ro/title            "Account Search"
+   ;; The adapter generates :account/search because :account/name is declared
+   ;; ::dlo/fulltext?. The report's control values are sent as load params and
+   ;; arrive in the resolver as (:query-params env) — so the :query control
+   ;; below IS the search box. Results come back in relevance order; columns
+   ;; are filled by the batched :account/id resolver.
+   ro/source-attribute :account/search
+   ro/row-pk           account/id
+   ro/columns          [account/name account/email]
+   ro/route            "account-search"
+   ro/run-on-mount?    false
+   ro/controls         {:query {:type        :string
+                                :label       "Search"
+                                :placeholder "full-text query"
+                                :onChange    (fn [this _] (control/run! this))}}
+   ro/control-layout   {:inputs [[:query]]}}
+  #_(report/render-layout this))
+
 (def ui-account-list (comp/factory AccountList {:keyfn :account/id}))
 
 ;; Category Form and Report

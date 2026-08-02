@@ -11,8 +11,9 @@
     (let [resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)]
       
       (testing "Correct number of resolvers"
-        ;; 4 ID resolvers (account, category, item, person) + 4 all-ids resolvers = 8 total
-        (is (= 8 (count resolvers))))
+        ;; 4 ID resolvers (account, category, item, person) + 4 all-ids resolvers
+        ;; + 2 search resolvers (account + person have ::dlo/fulltext? attrs) = 10
+        (is (= 10 (count resolvers))))
       
       (testing "All resolvers are valid Pathom3 resolvers"
         (doseq [resolver resolvers]
