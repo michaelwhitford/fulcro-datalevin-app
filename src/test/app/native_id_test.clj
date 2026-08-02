@@ -167,7 +167,7 @@
 
 (deftest native-id-resolver-generation
   (testing "Resolvers are generated for native-id attributes"
-    (let [resolvers (dl/generate-resolvers model/all-attributes :main)
+    (let [resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)
           person-resolvers (filter #(= :person/id (first (::pco/input (:config %)))) 
                                    resolvers)]
       (is (>= (count person-resolvers) 1)
@@ -184,7 +184,7 @@
             eid (ffirst (d/q '[:find ?e :where [?e :person/name "Grace"]] db))
             
             ;; Generate resolvers and find person resolver
-            resolvers (dl/generate-resolvers model/all-attributes :main)
+            resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)
             person-resolver (first (filter #(= :person/id (first (::pco/input (:config %))))
                                            resolvers))
             

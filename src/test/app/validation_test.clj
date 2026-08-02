@@ -5,7 +5,6 @@
    [clojure.test :refer [deftest testing is]]
    [datalevin.core :as d]
    [us.whitford.fulcro.rad.database-adapters.datalevin :as dl]
-   [us.whitford.fulcro.rad.database-adapters.datalevin-common :as datalevin-common]
    [app.test-utils :refer [with-test-db]]
    [app.model :as model]
    [app.model.account :as account]
@@ -25,9 +24,7 @@
   [conn]
   (let [env-middleware (-> (attr/wrap-env model/all-attributes)
                            (form/wrap-env middleware/save-middleware middleware/delete-middleware)
-                           (datalevin-common/wrap-env
-                            (fn [env] {:main conn})
-                            d/db))]
+                           (dl/wrap-env (fn [_env] {:main conn})))]
     (pathom3/new-processor {} env-middleware []
                            [(vec (concat (resolvers/generate-resolvers model/all-attributes)
                                          (dl/generate-resolvers model/all-attributes :main)))

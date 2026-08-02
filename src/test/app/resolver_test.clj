@@ -8,7 +8,7 @@
 
 (deftest resolver-generation
   (testing "Resolvers are generated for all identity attributes"
-    (let [resolvers (dl/generate-resolvers model/all-attributes :main)]
+    (let [resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)]
       
       (testing "Correct number of resolvers"
         ;; 4 ID resolvers (account, category, item, person) + 4 all-ids resolvers = 8 total
@@ -23,7 +23,7 @@
 
 (deftest id-resolver-configuration
   (testing "ID resolvers are properly configured"
-    (let [resolvers (dl/generate-resolvers model/all-attributes :main)
+    (let [resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)
           id-resolvers (filter #(re-find #"\.id-resolver$" 
                                           (str (::pco/op-name (pco/operation-config %))))
                                resolvers)]
@@ -38,7 +38,7 @@
 
 (deftest all-ids-resolver-configuration
   (testing "All-IDs resolvers are properly configured"
-    (let [resolvers (dl/generate-resolvers model/all-attributes :main)
+    (let [resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)
           all-ids-resolvers (filter #(re-find #"-all-resolver$" 
                                                (str (::pco/op-name (pco/operation-config %))))
                                     resolvers)]
@@ -54,7 +54,7 @@
 
 (deftest account-resolver-outputs
   (testing "Account ID resolver provides correct outputs"
-    (let [resolvers (dl/generate-resolvers model/all-attributes :main)
+    (let [resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)
           account-resolver (first (filter #(= 'account.id-resolver 
                                                (::pco/op-name (pco/operation-config %)))
                                           resolvers))]
@@ -71,7 +71,7 @@
 
 (deftest category-resolver-outputs
   (testing "Category ID resolver provides correct outputs"
-    (let [resolvers (dl/generate-resolvers model/all-attributes :main)
+    (let [resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)
           category-resolver (first (filter #(= 'category.id-resolver 
                                                 (::pco/op-name (pco/operation-config %)))
                                            resolvers))]
@@ -85,7 +85,7 @@
 
 (deftest item-resolver-outputs
   (testing "Item ID resolver provides correct outputs including references"
-    (let [resolvers (dl/generate-resolvers model/all-attributes :main)
+    (let [resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)
           item-resolver (first (filter #(= 'item.id-resolver 
                                            (::pco/op-name (pco/operation-config %)))
                                        resolvers))]
@@ -109,7 +109,7 @@
 
 (deftest resolver-inputs
   (testing "ID resolvers require correct identity inputs"
-    (let [resolvers (dl/generate-resolvers model/all-attributes :main)
+    (let [resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)
           account-resolver (first (filter #(= 'account.id-resolver 
                                                (::pco/op-name (pco/operation-config %)))
                                           resolvers))
@@ -141,7 +141,7 @@
   (require '[app.model :as model])
   (require '[com.wsscode.pathom3.connect.operation :as pco])
   
-  (def resolvers (dl/generate-resolvers model/all-attributes :main))
+  (def resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main))
   (count resolvers)
   
   (doseq [r resolvers]

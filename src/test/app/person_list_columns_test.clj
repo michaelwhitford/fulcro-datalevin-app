@@ -9,7 +9,6 @@
    [clojure.test :refer [deftest testing is]]
    [datalevin.core :as d]
    [us.whitford.fulcro.rad.database-adapters.datalevin :as dl]
-   [us.whitford.fulcro.rad.database-adapters.datalevin-common :as common]
    [com.fulcrologic.rad.attributes :as attr]
    [com.fulcrologic.rad.pathom3 :as pathom3]
    [com.fulcrologic.rad.resolvers :as res]
@@ -28,7 +27,7 @@
   (let [automatic-resolvers (vec (concat (res/generate-resolvers model/all-attributes)
                                          (dl/generate-resolvers model/all-attributes :main)))
         env-middleware (-> (attr/wrap-env model/all-attributes)
-                           (common/wrap-env (fn [env] {:main conn}) d/db))]
+                           (dl/wrap-env (fn [_env] {:main conn})))]
     (pathom3/new-processor config/config env-middleware [] [automatic-resolvers])))
 
 (deftest person-all-query-returns-data

@@ -60,7 +60,7 @@
                           :person/age 35}])
       
       (let [db (d/db conn)
-            resolvers (dl/generate-resolvers model/all-attributes :main)
+            resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)
             
             ;; Create Pathom environment with proper registry
             env (-> {::dlo/connections {:main conn}
@@ -104,7 +104,7 @@
 
 (deftest person-all-resolver-output-configuration
   (testing "person-all-resolver is configured to output person IDs only"
-    (let [resolvers (dl/generate-resolvers model/all-attributes :main)
+    (let [resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)
           person-all-resolver (first (filter #(= 'person-all-resolver 
                                                   (::pco/op-name (pco/operation-config %)))
                                              resolvers))]
@@ -141,7 +141,7 @@
             db (:db-after tx-result)
             eid (ffirst (d/q '[:find ?e :where [?e :person/name "Charlie"]] db))
             
-            resolvers (dl/generate-resolvers model/all-attributes :main)
+            resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)
             person-id-resolver (first (filter #(= 'person.id-resolver 
                                                    (::pco/op-name (pco/operation-config %)))
                                               resolvers))
@@ -181,7 +181,7 @@
         
         (let [db (d/db conn)
               person-eid (ffirst (d/q '[:find ?e :where [?e :person/name "Test Person"]] db))
-              resolvers (dl/generate-resolvers model/all-attributes :main)
+              resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main)
               
               ;; Create Pathom environment for executing join queries
               env (-> {::dlo/connections {:main conn}
@@ -225,7 +225,7 @@
   (require '[app.model :as model])
   (require '[com.wsscode.pathom3.connect.operation :as pco])
   
-  (def resolvers (dl/generate-resolvers model/all-attributes :main))
+  (def resolvers (dl/generate-resolvers-pathom3 model/all-attributes :main))
   (def person-all (first (filter #(= 'person-all-resolver 
                                       (::pco/op-name (pco/operation-config %)))
                                  resolvers)))
