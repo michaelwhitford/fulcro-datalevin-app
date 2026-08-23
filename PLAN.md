@@ -1,3 +1,56 @@
+# Plan: Migrate to fulcro-rad-datalevin 1.0.0-RC2
+
+## Status: ✅ COMPLETED
+
+## Objective
+Absorb the one upstream breaking change (opt-in `:<ns>/all`) and exercise the
+three additive RC2 capabilities end-to-end, keeping the suite green. This app is
+the adapter's proving ground — integration reality is proven here.
+
+## Upstream changes (fulcro-rad-datalevin 1.0.0-RC1 → 1.0.0-RC2)
+- **BREAKING:** `generate-resolvers` no longer emits `:<ns>/all` by default.
+  Enumeration is opt-in via `::dlo/all-resolver? true` on the identity attribute
+  (canonical Datomic/XTDB idiom: autogen only collision-safe id-resolvers).
+- **Additive:** `::dlo/all-ids-key` renames the generated enumeration key (flag
+  gates, key names) so a consumer-authored `:<ns>/all` can coexist.
+- **Additive:** `:<ns>/search` idents carry `::dlo/score` (desc); `:<ns>/similar`
+  idents carry `::dlo/distance` (asc). Opt-in at query time — omitting the metric
+  key leaves old queries byte-identical.
+- **Additive:** raw primitives `dl/vec-search` (`[[eid dist]…]` asc) and
+  `dl/fulltext-search` (`[[eid score]…]` desc) exported on the facade.
+- **Additive:** `::dlo/generate-resolvers? false` wired (opt-out).
+
+## Work performed
+1. ✅ **Baseline** — ran suite on RC2 classpath; confirmed the 32 failures were
+   ALL `:<ns>/all` consumers (account/category/item/person), no other kinds.
+2. ✅ **Migrate model** — added `::dlo/all-resolver? true` (under `:clj`) to
+   `:account/id`, `:category/id`, `:item/id`, `:person/id`. Restored 91/356/0.
+3. ✅ **`::dlo/score`** — added tests through the real parser for the account
+   (UUID) and person (native-id) legs; asserted present + descending; added an
+   opt-in regression proving byte-identical pre-RC2 shape when unrequested.
+4. ✅ **`::dlo/all-ids-key` rename** — new `app.rc2-enhancements-test` proves the
+   renamed `:page/index-all` resolves end-to-end while `:page/all` is absent;
+   also verifies the flag-gates/key-names rule. Uses a self-contained `:page`
+   model to avoid disturbing the real model.
+5. ✅ **Raw primitives** — `dl/fulltext-search` exercised over `account` and
+   native-id `person` domains (`[[eid score]…]` desc + `:top` cap).
+   `dl/vec-search` documented as skipped (no `:vec` attribute in the demo model;
+   covered upstream).
+6. ✅ **Docs + lint** — CHANGELOG/PLAN updated; `clj-kondo` clean.
+
+## Result
+- **Suite: 100 tests / 383 assertions / 0 failures** (was 91/356/0 pre-RC2).
+- New: 9 tests / 27 assertions covering `::dlo/score`, `::dlo/all-ids-key`
+  rename, gating, and the `dl/fulltext-search` primitive.
+
+## Files changed
+- `src/main/app/model/{account,category,item,person}.cljc` — `::dlo/all-resolver? true`
+- `src/test/app/fulltext_search_integration_test.clj` — `::dlo/score` tests + regression
+- `src/test/app/rc2_enhancements_test.clj` — NEW: rename + gating + primitives
+- `CHANGELOG.md`, `PLAN.md`
+
+---
+
 # Plan: Add Native ID Support Testing
 
 ## Objective

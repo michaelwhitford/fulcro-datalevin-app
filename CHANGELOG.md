@@ -2,6 +2,53 @@
 
 ## [Unreleased]
 
+### Changed
+- **Migrated to fulcro-rad-datalevin 1.0.0-RC2 (`:<ns>/all` is now opt-in)**
+  
+  **BREAKING (upstream):** `generate-resolvers` no longer emits the `:<ns>/all`
+  enumeration resolver by default. It follows the canonical RAD adapter idiom
+  (Datomic/XTDB): autogenerate only collision-safe, input-gated id-resolvers;
+  enumeration is opt-in and renamable.
+  
+  **Migration applied:** added `::dlo/all-resolver? true` (under the `:clj`
+  reader conditional) to every identity attribute whose `:<ns>/all` this app
+  relies on — `:account/id`, `:category/id`, `:item/id`, and `:person/id`
+  (native-id). `:category/all` is additionally consumed by the item category
+  picker (`po/query-key :category/all`).
+  - Files: `src/main/app/model/{account,category,item,person}.cljc`
+  - Restores the pre-RC2 green baseline (91 tests / 356 assertions / 0 failures),
+    then new coverage brings the suite to **100 tests / 383 assertions / 0 failures**.
+
+### Added
+- **RC2 additive surface exercised end-to-end (proving-ground coverage)**
+  - **`::dlo/score` full-text relevance metric** — new tests in
+    `app.fulltext-search-integration-test` request `::dlo/score` in the
+    `:<ns>/search` join through the app's REAL Pathom 3 parser and assert the
+    metric is present and descending, for both the `:account` (UUID id) leg and
+    the `:person` (native-id) leg. A regression test proves that omitting
+    `::dlo/score` yields the byte-identical pre-RC2 shape (the planner prunes the
+    metric key when unrequested — old queries are unchanged).
+  - **`::dlo/all-ids-key` rename** — new `app.rc2-enhancements-test` proves,
+    end-to-end through a real parser, that setting `::dlo/all-resolver? true`
+    plus `::dlo/all-ids-key :page/index-all` on an identity attribute resolves
+    the renamed key while `:page/all` is absent (left to a consumer-authored
+    resolver). Also verifies the gating rule: the key alone (without the flag)
+    generates nothing. Uses a small self-contained `:page` model so the rename
+    does not disturb the app's real model.
+  - **Raw ranked-search primitives** — `app.rc2-enhancements-test` exercises
+    `dl/fulltext-search` against the app's seeded db (over both the `account`
+    and native-id `person` domains), asserting the `[[eid score] ...]`
+    descending contract and `:top` capping. `dl/vec-search` is documented as
+    skipped here (the demo model declares no `:vec` attribute; the raw
+    ascending-distance primitive is covered upstream in `vector_search_test.clj`).
+  
+  **Background:** The upstream fulcro-rad-datalevin adapter shipped 1.0.0-RC2
+  (consumer-driven improvements): ranked-search resolvers now surface their
+  metric (`::dlo/score` desc on `:<ns>/search`, `::dlo/distance` asc on
+  `:<ns>/similar`), enumeration follows the opt-in RAD idiom
+  (`::dlo/all-resolver?` gates, `::dlo/all-ids-key` renames), and the raw search
+  primitives (`vec-search`, `fulltext-search`) are public facade API.
+
 ### Added
 - **Enhanced AI Diagnostic Report with additional metadata**
   - Added **Relationships** section showing entity reference relationships (e.g., `item/category -> category/id`)

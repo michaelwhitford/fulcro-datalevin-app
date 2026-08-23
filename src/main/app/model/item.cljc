@@ -10,7 +10,9 @@
 
 (defattr id :item/id :uuid
   {ao/identity? true
-   ao/schema    :main})
+   ao/schema    :main
+   ;; Opt in to the generated :item/all enumeration resolver (RC2: opt-in)
+   #?@(:clj [dlo/all-resolver? true])})
 
 (defattr name :item/name :string
   {ao/schema     :main

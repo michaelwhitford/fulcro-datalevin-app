@@ -9,7 +9,10 @@
   {ao/identity? true
    ao/schema    :main
    ;; Specify which attribute to use as the label when this entity is referenced
-   ao/label     :category/label})
+   ao/label     :category/label
+   ;; Opt in to the generated :category/all enumeration resolver (RC2: opt-in).
+   ;; Consumed by the item picker (po/query-key :category/all) and CategoryList.
+   #?@(:clj [dlo/all-resolver? true])})
 
 (defattr label :category/label :string
   {ao/schema     :main

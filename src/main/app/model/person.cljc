@@ -14,7 +14,10 @@
   {ao/identity? true
    ao/schema    :main
    ;; Use Datalevin's built-in :db/id instead of a domain-specific ID
-   #?@(:clj [dlo/native-id? true])})
+   #?@(:clj [dlo/native-id? true
+             ;; Opt in to the generated :person/all enumeration resolver
+             ;; (RC2: opt-in). Works on native-id entities too.
+             dlo/all-resolver? true])})
 
 (defattr name :person/name :string
   {ao/schema     :main
